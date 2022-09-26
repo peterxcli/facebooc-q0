@@ -144,20 +144,20 @@ void queue_split(element_t* src, element_t** l, element_t** r)
 {
     element_t* left;
     element_t* right;
-    right = src;
-    left = src->next;
+    left = src;
+    right = src->next;
 
-    while (left != NULL) {
-        left = left->next;
-        if (left != NULL) {
+    while (right != NULL) {
+        right = right->next;
+        if (right != NULL) {
             right = right->next;
             left = left->next;
         }
     }
 
     *l = src;
-    *r = right->next;
-    right->next = NULL;
+    *r = left->next;
+    left->next = NULL;
 }
 
 element_t* sorted_merge(element_t* l, element_t* r)
