@@ -76,7 +76,7 @@ bool q_insert_tail(queue_t *q, char *s)
     q->tail->next = new_element;
     q->tail = new_element;
     q->size++;
-    
+
     return true;
 }
 
@@ -140,7 +140,8 @@ void q_reverse(queue_t *q)
     }
 }
 
-void queue_split(element_t* src, element_t** l, element_t** r) {
+void queue_split(element_t* src, element_t** l, element_t** r)
+{
     element_t* left;
     element_t* right;
     right = src;
@@ -159,7 +160,8 @@ void queue_split(element_t* src, element_t** l, element_t** r) {
     right->next = NULL;
 }
 
-element_t* sorted_merge(element_t* l, element_t* r) {
+element_t* sorted_merge(element_t* l, element_t* r)
+{
     element_t* res = NULL;
 
     if (l == NULL) return r;
@@ -168,8 +170,7 @@ element_t* sorted_merge(element_t* l, element_t* r) {
     if (strcmp(l->value, r->value) <= 0) {
         res = l;
         res->next = sorted_merge(l->next, r);
-    }
-    else {
+    } else {
         res = r;
         res->next = sorted_merge(l, r->next);
     }
@@ -179,7 +180,8 @@ element_t* sorted_merge(element_t* l, element_t* r) {
 /*
  * The function's sorting algorithm should be merge sort.
  */
-void merge_sort(element_t** head) {
+void merge_sort(element_t** head)
+{
     if (!(*head) || !(*head)->next) return;
     element_t *head_tmp = *head;
     element_t *a, *b;
