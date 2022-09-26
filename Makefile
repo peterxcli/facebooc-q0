@@ -37,8 +37,18 @@ valgrind: valgrind_existence
 
 clean:
 	rm -f $(OBJS) $(deps) *~ test /tmp/test.*
+	rm -f quetest quetest.o
 	rm -rf *.dSYM
 	(cd traces; rm -f *~)
+
+quetest:
+	make clean
+	gcc -O1 -g -I. -c -MMD -MF .test.o.d quetest.c
+	gcc -O1 -g -I. -c -MMD -MF .queue.o.d queue.c
+	gcc quetest.o queue.o -o quetest
+	valgrind --leak-check=full ./quetest
+	@echo
+	make clean
 
 -include $(deps)
 

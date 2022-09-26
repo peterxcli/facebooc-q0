@@ -10,14 +10,22 @@
  */
 queue_t *q_new()
 {
-    
-    return NULL;
+    queue_t *que = malloc(sizeof(queue_t));
+    que->head = NULL;
+    que->size = 0;
+    que->tail = NULL;
+    return que;
 }
 
 /* Free all storage used by queue */
 void q_free(queue_t *q)
 {
-
+    if (q == NULL || q->head == NULL) return;
+    for (element_t *e = q->head; e; e = e->next) {
+        free(e->value);
+        free(e);
+    }
+    free(q);
 }
 
 /*
@@ -30,7 +38,16 @@ void q_free(queue_t *q)
 
 bool q_insert_head(queue_t *q, char *s)
 {
-    
+    if (q == NULL) return false;
+    element_t *new_element = malloc(sizeof(element_t));
+    if (new_element == NULL) return false;
+    new_element->value = malloc(sizeof(char) * (strlen(s) + 1));
+    if (new_element->value == NULL) return false;
+    strcpy(new_element->value, s);
+    new_element->next = q->head;
+    q->head = new_element;
+    q->size++;
+    if (new_element->next == NULL) q->tail = new_element;
     return true;
 }
 
@@ -43,6 +60,22 @@ bool q_insert_head(queue_t *q, char *s)
  */
 bool q_insert_tail(queue_t *q, char *s)
 {
+    if (q == NULL) return false;
+    element_t *new_element = malloc(sizeof(element_t));
+    if (new_element == NULL) return false;
+    new_element->value = malloc(sizeof(char) * (strlen(s) + 1));
+    if (new_element->value == NULL) return false;
+    new_element->next = NULL;
+    strcpy(new_element->value, s);
+    if (q->head == NULL) {
+        q->head = new_element;
+        q->tail = new_element;
+        q->size++;
+        return true;
+    }
+    q->tail->next = new_element;
+    q->tail = new_element;
+    q->size++;
     
     return true;
 }
@@ -57,7 +90,15 @@ bool q_insert_tail(queue_t *q, char *s)
  */
 bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
 {
-    
+    if (q == NULL) return false;
+    if (q->size == 0) return false;
+    element_t* del = q->head;
+    q->head = del->next;
+    strncpy(sp, del->value, sizeof(char) * (bufsize-1));
+    if (strlen(del->value) >= bufsize) sp[bufsize-1] = '\0';
+    free(del->value);
+    free(del);
+    q->size--;
     return true;
 }
 
@@ -67,6 +108,7 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
  */
 size_t q_size(queue_t *q)
 {
+    if (q != NULL) return q->size;
     return -1;
 }
 
@@ -79,17 +121,76 @@ size_t q_size(queue_t *q)
  */
 void q_reverse(queue_t *q)
 {
+    if (q == NULL) return;
+    if (q->size <= 1) return;
+    element_t* nxt = q->head, *prev = NULL;
+    q->head = q->tail;
+    q->tail = nxt;
 
+    //e1 -> e2 -> e3 -> null
+    // ^           ^
+    // |           |
+    //tail        head
+
+    prev = q->tail;
+    for (element_t *e = q->tail; e; e = nxt) {
+        nxt = e->next;
+        e->next = (prev != e ? prev : NULL); //first element
+        prev = e;
+    }
+}
+
+void queue_split(element_t* src, element_t** l, element_t** r) {
+    element_t* left;
+    element_t* right;
+    right = src;
+    left = src->next;
+
+    while (left != NULL) {
+        left = left->next;
+        if (left != NULL) {
+            right = right->next;
+            left = left->next;
+        }
+    }
+
+    *l = src;
+    *r = right->next;
+    right->next = NULL;
+}
+
+element_t* sorted_merge(element_t* l, element_t* r) {
+    element_t* res = NULL;
+
+    if (l == NULL) return r;
+    else if (r == NULL) return l;
+
+    if (strcmp(l->value, r->value) <= 0) {
+        res = l;
+        res->next = sorted_merge(l->next, r);
+    }
+    else {
+        res = r;
+        res->next = sorted_merge(l, r->next);
+    }
+    return res;
 }
 
 /*
  * The function's sorting algorithm should be merge sort.
  */
-void merge_sort(element_t **head)
-{
-    if (!(*head) || !(*head)->next)
-        return;
+void merge_sort(element_t** head) {
+    if (!(*head) || !(*head)->next) return;
+    element_t *head_tmp = *head;
+    element_t *a, *b;
 
+    if ((head == NULL) || (head_tmp->next == NULL)) return;
+
+    queue_split(head_tmp, &a, &b);
+
+    merge_sort(&a), merge_sort(&b);
+
+    *head = sorted_merge(a, b);
 }
 
 /*
